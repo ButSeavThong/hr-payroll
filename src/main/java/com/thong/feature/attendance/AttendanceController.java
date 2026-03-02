@@ -36,7 +36,7 @@ public class AttendanceController {
 
     // POST /api/v1/attendances/check-in done !
     @PostMapping("/check-in")
-    @PreAuthorize("hasAuthority('SCOPE_EMPLOYEE')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_EMPLOYEE', 'SCOPE_ADMIN')")
     public ResponseEntity<AttendanceResponse> checkIn(
             Authentication authentication,
             @RequestBody(required = false) CheckInRequest request) {
@@ -55,7 +55,7 @@ public class AttendanceController {
 
     // POST /api/attendance/check-out done!
     @PostMapping("/check-out")
-    @PreAuthorize("hasAnyAuthority('SCOPE_EMPLOYEE')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_EMPLOYEE', 'SCOPE_ADMIN')")
     public ResponseEntity<AttendanceResponse> checkOut(
             Authentication authentication) {
         return ResponseEntity.ok(attendanceService.checkOut(resolveEmployeeId(authentication)));

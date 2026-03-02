@@ -40,10 +40,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
-    private final RoleRepository roleRepository;
+//    private final UserRepository userRepository;
+//    private final UserMapper userMapper;
+//    private final PasswordEncoder passwordEncoder;
+//    private final RoleRepository roleRepository;
     private final DaoAuthenticationProvider authProvider;
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
 

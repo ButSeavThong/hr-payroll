@@ -2,9 +2,9 @@ spring:
   jackson:
     time-zone: Asia/Phnom_Penh
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5169/share_db
+    username: thongfazon
+    password: itp@168
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
