@@ -63,4 +63,10 @@ public class UserController {
         }
     }
 
+
+    @PatchMapping("/{id}/toggle-status")
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    public ResponseEntity<UserProfileResponse> toggleUserStatus(@PathVariable Integer id) {
+        return ResponseEntity.ok(userService.toggleUserStatus(id));
+    }
 }

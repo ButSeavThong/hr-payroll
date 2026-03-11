@@ -2,6 +2,7 @@ package com.thong.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -66,6 +67,20 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ExceptionResponse(
                         "Access Denied",
+                        403,
+                        LocalDateTime.now(),
+                        ex.getMessage()
+                ));
+    }
+
+
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ExceptionResponse> handleDisabled(DisabledException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ExceptionResponse(
+                        "Your account has been deactivated. Please contact your administrator.",
                         403,
                         LocalDateTime.now(),
                         ex.getMessage()

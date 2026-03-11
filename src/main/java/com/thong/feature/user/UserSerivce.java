@@ -9,10 +9,11 @@ import java.util.List;
 
 public interface UserSerivce {
     UserProfileResponse register(CreateUserRequest createUserRequest);
-    void deleteUserById(Integer id);
     UserProfileResponse getUserProfile(Integer id);
     UserProfileResponse UpdateProfileById(Integer id, UpdateProfileRequest updateProfileRequest);
     List<UserProfileResponse> getUserProfiles();
 
+    void deleteUserById(Integer id);
     void adminCreateNewAdmin(CreateUserRequest createUserRequest);
+    UserProfileResponse toggleUserStatus(Integer userId);
 }

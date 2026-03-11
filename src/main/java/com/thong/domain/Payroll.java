@@ -46,4 +46,13 @@ public class Payroll {
     // Lifecycle: GENERATED -> PAID
     @Column(nullable = false)
     private String status = "GENERATED";
+
+
+    @Column(name = "unpaid_leave_deduction", precision = 15, scale = 2)
+    @Builder.Default
+    private BigDecimal unpaidLeaveDeduction = BigDecimal.ZERO;
+
+    @Column(name = "unpaid_leave_days")
+    @Builder.Default
+    private Integer unpaidLeaveDays = 0;
 }

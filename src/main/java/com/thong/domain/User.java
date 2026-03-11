@@ -1,15 +1,13 @@
 package com.thong.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Builder
 @Entity
 @Table(name = "users")
 @Setter
@@ -46,6 +44,11 @@ public class User {
     private Boolean isAccountNonLocked;
     private Boolean isCredentialsNonExpired;
     private Boolean isDeleted = false;
+
+    // User.java — add this field
+    @Column(name = "is_enabled", nullable = false)
+    @Builder.Default
+    private Boolean isEnabled = true;   // true = can login, false = blocked
 
     /* ===== Roles ===== */
     @ManyToMany(fetch = FetchType.EAGER)

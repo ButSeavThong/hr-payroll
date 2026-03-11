@@ -2,12 +2,14 @@ package com.thong.feature.user;
 
 import com.thong.domain.Role;
 import com.thong.domain.User;
+import com.thong.feature.employee.EmployeeRepository;
 import com.thong.feature.role.RoleRepository;
 import com.thong.feature.user.dto.CreateUserRequest;
 import com.thong.feature.user.dto.UpdateProfileRequest;
 import com.thong.feature.user.dto.UserProfileResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,16 +18,17 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements  UserSerivce{
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
+    private final EmployeeRepository employeeRepository;
 
     @Transactional
     @Override
@@ -92,7 +95,8 @@ public class UserServiceImpl implements  UserSerivce{
                 user.getGender(),
                 user.getDob(),
                 user.getIsDeleted(),
-                user.getProfileImage()
+                user.getProfileImage(),
+                user.getIsEnabled()
 
         );
     }
@@ -112,7 +116,8 @@ public class UserServiceImpl implements  UserSerivce{
                 user.getGender(),
                 user.getDob(),
                 user.getIsDeleted(),
-                user.getProfileImage()
+                user.getProfileImage(),
+                user.getIsEnabled()
         );
     }
 
@@ -150,12 +155,37 @@ public class UserServiceImpl implements  UserSerivce{
 
         // Set role admin + user :
         List<Role> roles = new ArrayList<>();
-        Role userRole = roleRepository.findByName("USER").orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,  "Role not found"));
+//        Role userRole = roleRepository.findByName("USER").orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,  "Role not found"));
         Role adminRole = roleRepository.findByName("ADMIN").orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,  "Role not found"));
-        roles.add(userRole);
+//        roles.add(userRole);
         roles.add(adminRole);
         user.setRoles(roles);
 
         userRepository.save(user);
+    }
+
+    // UserServiceImpl.java — add this method
+    @Override
+    @Transactional
+    public UserProfileResponse toggleUserStatus(Integer userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User not found"
+                ));
+
+        boolean newStatus = !Boolean.TRUE.equals(user.getIsEnabled());
+        user.setIsEnabled(newStatus);
+
+        //  Also sync Employee.isActive so HR views stay consistent
+        employeeRepository.findByUserId(userId).ifPresent(emp -> {
+            emp.setIsActive(newStatus);
+            employeeRepository.save(emp);
+        });
+
+        log.info("User {} ({}) → isEnabled set to {}",
+                user.getId(), user.getEmail(), newStatus);
+
+        return userMapper.toUserProfileResponse(userRepository.save(user));
     }
 }

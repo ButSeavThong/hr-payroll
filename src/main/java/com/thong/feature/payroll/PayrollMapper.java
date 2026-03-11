@@ -4,22 +4,24 @@ import com.thong.domain.Payroll;
 import com.thong.feature.payroll.dto.PayrollResponse;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class PayrollMapper {
 
-    public PayrollResponse toResponse(Payroll payroll) {
-        String name = payroll.getEmployee().getFirstName()
-            + " " + payroll.getEmployee().getLastName();
+    public PayrollResponse toResponse(Payroll p) {
         return new PayrollResponse(
-            payroll.getId(),
-            payroll.getEmployee().getId(),
-            name,
-            payroll.getMonth(),
-            payroll.getBaseSalary(),
-            payroll.getOvertimePay(),
-            payroll.getTax(),
-            payroll.getNetSalary(),
-            payroll.getStatus()
+                p.getId(),
+                p.getEmployee().getId(),
+                p.getEmployee().getFirstName() + " " + p.getEmployee().getLastName(),
+                p.getMonth(),
+                p.getBaseSalary(),
+                p.getOvertimePay(),
+                p.getUnpaidLeaveDeduction() != null ? p.getUnpaidLeaveDeduction() : BigDecimal.ZERO,
+                p.getUnpaidLeaveDays()      != null ? p.getUnpaidLeaveDays()      : 0,
+                p.getTax(),
+                p.getNetSalary(),
+                p.getStatus()
         );
     }
 }

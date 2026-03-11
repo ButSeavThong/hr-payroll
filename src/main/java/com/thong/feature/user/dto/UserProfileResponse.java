@@ -10,5 +10,7 @@ public record UserProfileResponse(
         String gender,
         LocalDate dob,
         Boolean isDeleted,
-        String profileImage) {
+        String profileImage,
+        Boolean isEnabled
+) {
 }

@@ -39,4 +39,20 @@ public interface LeaveRepository extends JpaRepository<Leave, Integer> {
     // In EmployeeRepository.java — add this method
     @Query("SELECT e FROM Employee e WHERE e.user.email = :email")
     Optional<Employee> findByUserEmail(@Param("email") String email);
+
+
+    @Query("""
+    SELECT l FROM Leave l
+    WHERE l.employee.id = :employeeId
+    AND l.status = 'APPROVED'
+    AND l.leaveType = 'UNPAID_LEAVE'
+    AND l.startDate <= :monthEnd
+    AND l.endDate >= :monthStart
+""")
+    List<Leave> findApprovedUnpaidLeavesInMonth(
+            @Param("employeeId") Integer employeeId,
+            @Param("monthStart") LocalDate monthStart,
+            @Param("monthEnd")   LocalDate monthEnd
+    );
+
 }

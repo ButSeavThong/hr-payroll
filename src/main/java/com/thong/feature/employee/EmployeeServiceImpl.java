@@ -2,14 +2,18 @@ package com.thong.feature.employee;
 
 
 import com.thong.domain.Employee;
+import com.thong.domain.LeaveBalance;
 import com.thong.feature.employee.dto.CreateEmployeeRequest;
 import com.thong.feature.employee.dto.EmployeeMapper;
 import com.thong.feature.employee.dto.EmployeeResponse;
 import com.thong.feature.employee.dto.UpdateEmployeeRequest;
+import com.thong.feature.leave.LeaveBalanceRepository;
 import com.thong.feature.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -19,7 +23,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final EmployeeMapper employeeMapper;
-
+    private final LeaveBalanceRepository leaveBalanceRepository;
     @Override
     @Transactional
     public EmployeeResponse createEmployee(CreateEmployeeRequest request) {
@@ -42,7 +46,18 @@ public class EmployeeServiceImpl implements EmployeeService {
             .isActive(true)
             .build();
 
-        return employeeMapper.toResponse(employeeRepository.save(employee));
+        var savedEmployee = employeeRepository.save(employee);
+        // Auto-create leave balance for current year
+        var balance = LeaveBalance.builder()
+                .employee(savedEmployee)
+                .year(LocalDate.now().getYear())
+                .annualLeaveTotal(10)
+                .sickLeaveTotal(7)
+                .build();
+
+        leaveBalanceRepository.save(balance);
+
+        return employeeMapper.toResponse(savedEmployee);
     }
 
     @Override

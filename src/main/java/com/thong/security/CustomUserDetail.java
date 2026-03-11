@@ -30,7 +30,9 @@ public class CustomUserDetail implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(user.getRoles().stream().map(Role::getName).toString()));
+        return List.of(new SimpleGrantedAuthority(
+                user.getRoles().stream().map(Role::getName).toString()
+        ));
     }
 
     @Override
@@ -43,8 +45,26 @@ public class CustomUserDetail implements UserDetails {
         return user.getUsername();
     }
 
+    //  This is what Spring Security calls during authentication
+    // If returns false → login blocked with DisabledException
+    @Override
+    public boolean isEnabled() {
+        return Boolean.TRUE.equals(user.getIsEnabled());
+    }
 
+    //  Keep account non-expired and non-locked by default
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
+    @Override
+    public boolean isAccountNonLocked() {
+        return !Boolean.TRUE.equals(user.getIsDeleted()); // deleted = locked
+    }
 
-
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 }

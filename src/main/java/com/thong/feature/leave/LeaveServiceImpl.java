@@ -24,6 +24,7 @@ public class LeaveServiceImpl implements LeaveService {
     private final LeaveRepository leaveRepository;
     private final EmployeeRepository employeeRepository;
     private final LeaveMapper leaveMapper;
+    private final LeaveBalanceRepository leaveBalanceRepository;
 
     // ── Employee: request leave ───────────────────────────────────────────────
     @Override
@@ -64,22 +65,59 @@ public class LeaveServiceImpl implements LeaveService {
         return leaveMapper.toResponse(leaveRepository.save(leave));
     }
 
-    // ── Admin: approve or reject ──────────────────────────────────────────────
+    // When ADMIN approves a leave — deduct from balance
     @Override
     @Transactional
     public LeaveResponse reviewLeave(Integer leaveId, LeaveReviewRequest request) {
 
         var leave = leaveRepository.findById(leaveId)
-            .orElseThrow(() -> new RuntimeException("Leave request not found"));
+                .orElseThrow(() -> new RuntimeException("Leave request not found"));
 
         if (leave.getStatus() != LeaveStatus.PENDING) {
-            throw new IllegalStateException(
-                "Leave request has already been " + leave.getStatus().name().toLowerCase());
+            throw new IllegalStateException("Already " + leave.getStatus());
         }
-
-        // Only APPROVED or REJECTED allowed
         if (request.status() == LeaveStatus.PENDING) {
             throw new IllegalArgumentException("Status must be APPROVED or REJECTED");
+        }
+
+        //  Only deduct balance when APPROVED
+        if (request.status() == LeaveStatus.APPROVED) {
+            int year = leave.getStartDate().getYear();
+            var balance = leaveBalanceRepository
+                    .findByEmployeeIdAndYear(leave.getEmployee().getId(), year)
+                    .orElseThrow(() -> new RuntimeException("Leave balance not found for this employee"));
+
+            switch (leave.getLeaveType()) {
+                case ANNUAL_LEAVE -> {
+                    //  Check if enough days remain
+                    if (balance.getAnnualLeaveRemaining() < leave.getTotalDays()) {
+                        throw new IllegalStateException(
+                                "Insufficient annual leave balance. Remaining: "
+                                        + balance.getAnnualLeaveRemaining() + " days"
+                        );
+                    }
+                    balance.setAnnualLeaveUsed(
+                            balance.getAnnualLeaveUsed() + leave.getTotalDays()
+                    );
+                }
+                case SICK_LEAVE -> {
+                    if (balance.getSickLeaveRemaining() < leave.getTotalDays()) {
+                        throw new IllegalStateException(
+                                "Insufficient sick leave balance. Remaining: "
+                                        + balance.getSickLeaveRemaining() + " days"
+                        );
+                    }
+                    balance.setSickLeaveUsed(
+                            balance.getSickLeaveUsed() + leave.getTotalDays()
+                    );
+                }
+                case UNPAID_LEAVE -> {
+                    // No balance check — unlimited, but salary deducted at payroll
+                    // Just record it — payroll service will handle deduction
+                }
+            }
+
+            leaveBalanceRepository.save(balance);
         }
 
         leave.setStatus(request.status());
@@ -88,7 +126,6 @@ public class LeaveServiceImpl implements LeaveService {
 
         return leaveMapper.toResponse(leaveRepository.save(leave));
     }
-
     // ── Employee: my leaves ───────────────────────────────────────────────────
     @Override
     public List<LeaveResponse> getMyLeaves(Integer employeeId) {
