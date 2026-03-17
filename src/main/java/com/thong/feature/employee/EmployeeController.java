@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -70,4 +71,16 @@ public class EmployeeController {
 
         return ResponseEntity.ok(employeeService.getMyProfile(employee.getUser().getId()));
     }
+
+    @PostMapping("/onboard")
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    @Transactional  // if employee creation fails → user rolls back too
+    public ResponseEntity<EmployeeResponse> onboardEmployee(
+            @Valid @RequestBody CreateEmployeeWithAccountRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(employeeService.onboardEmployee(request));
+    }
+
+
 }

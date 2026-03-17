@@ -1,6 +1,7 @@
 package com.thong.feature.employee;
 
 import com.thong.feature.employee.dto.CreateEmployeeRequest;
+import com.thong.feature.employee.dto.CreateEmployeeWithAccountRequest;
 import com.thong.feature.employee.dto.EmployeeResponse;
 import com.thong.feature.employee.dto.UpdateEmployeeRequest;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,4 +17,7 @@ public interface EmployeeService {
     EmployeeResponse getEmployeeById(Integer id);
     // userId comes from JWT — employees can only see their own profile
     EmployeeResponse getMyProfile(Integer userId);
+    EmployeeResponse onboardEmployee(CreateEmployeeWithAccountRequest request);
+
+
 }
