@@ -1,7 +1,6 @@
 package com.thong.feature.employee;
 
 import com.thong.domain.Employee;
-import com.thong.domain.User;
 import com.thong.feature.employee.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

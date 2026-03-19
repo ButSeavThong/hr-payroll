@@ -17,5 +17,6 @@ public record EmployeeResponse(
     BigDecimal baseSalary,
     LocalDate hireDate,
     Boolean isActive,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    String profileImage
 ) {}

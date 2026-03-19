@@ -20,7 +20,8 @@ public class EmployeeMapper {
             employee.getBaseSalary(),
             employee.getHireDate(),
             employee.getIsActive(),
-            employee.getCreatedAt()
+            employee.getCreatedAt(),
+                employee.getUser().getProfileImage()
         );
     }
 }

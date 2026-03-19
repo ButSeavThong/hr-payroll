@@ -35,6 +35,7 @@ public class User {
     @Column(nullable = false, length = 10)
     private String gender;
 
+    @Column(name = "profile_image", columnDefinition = "TEXT")
     private String profileImage;
 
     private LocalDateTime createdAt;

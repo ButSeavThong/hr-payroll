@@ -7,14 +7,17 @@ import com.thong.feature.role.RoleRepository;
 import com.thong.feature.user.dto.CreateUserRequest;
 import com.thong.feature.user.dto.UpdateProfileRequest;
 import com.thong.feature.user.dto.UserProfileResponse;
+import com.thong.service.CloudinaryService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +32,50 @@ public class UserServiceImpl implements  UserSerivce{
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final EmployeeRepository employeeRepository;
+    private final CloudinaryService cloudinaryService;
+
+
+    @Override
+    public UserProfileResponse updateProfileImage(String email, MultipartFile file) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User not found"
+                ));
+
+        //  Delete old image if exists
+        if (user.getProfileImage() != null) {
+            cloudinaryService.deleteProfileImage(user.getProfileImage());
+        }
+
+        //  Save new image
+        try {
+            String filename = cloudinaryService.uploadProfileImage(file);
+            user.setProfileImage(filename);
+        } catch (IOException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Failed to save image"
+            );
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+
+        return userMapper.toUserProfileResponse(userRepository.save(user));
+    }
+
+
+
+    @Override
+    public UserProfileResponse removeProfileImage(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User not found"
+                ));
+
+        cloudinaryService.deleteProfileImage(user.getProfileImage());
+        user.setProfileImage(null);
+
+        return userMapper.toUserProfileResponse(userRepository.save(user));
+    }
 
     @Transactional
     @Override
@@ -188,4 +235,5 @@ public class UserServiceImpl implements  UserSerivce{
 
         return userMapper.toUserProfileResponse(userRepository.save(user));
     }
+
 }

@@ -1,16 +1,22 @@
 package com.thong.feature.user;
 
+import com.cloudinary.Cloudinary;
 import com.thong.domain.User;
 import com.thong.feature.user.dto.UpdateProfileRequest;
 import com.thong.feature.user.dto.UserProfileResponse;
+import com.thong.service.CloudinaryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -68,5 +74,27 @@ public class UserController {
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     public ResponseEntity<UserProfileResponse> toggleUserStatus(@PathVariable Integer id) {
         return ResponseEntity.ok(userService.toggleUserStatus(id));
+    }
+
+    // added new feature
+    // ── Upload / update profile image ─────────────────────────────────────────
+    @PatchMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyAuthority('SCOPE_EMPLOYEE', 'SCOPE_ADMIN')")
+    public ResponseEntity<UserProfileResponse> uploadProfileImage(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String email = jwt.getSubject();
+        return ResponseEntity.ok(userService.updateProfileImage(email, file));
+    }
+
+    // ── Remove profile image ───────────────────────────────────────────────────
+    @DeleteMapping("/profile-image")
+    @PreAuthorize("hasAnyAuthority('SCOPE_EMPLOYEE', 'SCOPE_ADMIN')")
+    public ResponseEntity<UserProfileResponse> removeProfileImage(
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String email = jwt.getSubject();
+        return ResponseEntity.ok(userService.removeProfileImage(email));
     }
 }

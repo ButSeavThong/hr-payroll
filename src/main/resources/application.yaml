@@ -12,3 +12,9 @@ spring:
 
 server:
   port: ${PORT:8080}
+
+#  Cloudinary — uses env vars on Render, fallback empty for local
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}
